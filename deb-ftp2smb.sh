@@ -39,6 +39,16 @@ echo -e "$F2SSMBPASS0\n$F2SSMBPASS0" | sudo tee | sudo smbpasswd -s -a $F2SSMBUS
 
 #smb server setup
 sudo tee /etc/samba/smb.conf << _EOF_
+[global]
+    wins support = yes
+    local master = yes
+    preferred master = yes
+    workgroup = RSMBWKGRP
+    netbios name = RUPCNETBIOS
+    lanman auth = no
+    ntlm auth = yes
+    client lanman auth = no
+
 [RSMBSHARE]
     comment = "ftp2smb debian based vm share test"
     path = /home/RSMBUSER0
@@ -49,14 +59,6 @@ sudo tee /etc/samba/smb.conf << _EOF_
     spotlight = yes
     guest ok= no
     valid users = RSMBUSER0
-    wins support = yes
-    local master = yes
-    preferred master = yes
-    workgroup = RSMBWKGRP
-    netbios name = RUPCNETBIOS
-    lanman auth = no
-    ntlm auth = yes
-    client lanman auth = no
 _EOF_
 
 sudo sed -i "s|RSMBSHARE|$F2SSMBSHARE|g" /etc/samba/smb.conf
