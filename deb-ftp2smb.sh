@@ -28,7 +28,7 @@ F2SFTPPASS0="max8char"
 
 #prepare system
 sudo apt-get update
-sudo apt-get -y install ntp net-tools nmap tftp samba avahi-daemon avahi-discover libnss-mdns avahi-utils vsftpd apache2-utils libpam-pwdfile
+sudo apt-get -y install ntp net-tools nmap tftp samba avahi-daemon avahi-discover libnss-mdns avahi-utils vsftpd apache2-utils libpam-pwdfile curl python3
 
 sudo sed -i "s/$HOSTNAME/$F2SHOSTNAME/g" /etc/hosts
 sudo sed -i "s/$HOSTNAME/$F2SHOSTNAME/g" /etc/hostname
@@ -69,7 +69,7 @@ UPCNETBIOS=$(echo $F2SHOSTNAME | sed -e 's/\(.*\)/\U\1/' $F2SHOSTNAME -)
 sudo sed -i "s|RUPCNETBIOS|$UPCNETBIOS|g" /etc/samba/smb.conf
 
 #testparm #will test smb.conf setings
-sudo systemctl restart smbd
+sudo systemctl restart smbd nmbd
 
 #smb bonjour / zeroconf / avahi discovery 
 sudo tee /etc/avahi/services/smb.service <<_EOF_
@@ -90,6 +90,13 @@ sudo tee /etc/avahi/services/smb.service <<_EOF_
 _EOF_
 
 sudo systemctl restart avahi-daemon
+
+#wsdd Windows Network Discovery
+mkdir ~/wsdd
+cd ~/wsdd
+curl -O https://raw.githubusercontent.com/christgau/wsdd/master/src/wsdd.py
+sudo sed -i 's|exit 0|/usr/bin/python3 /home/'$USER'/wsdd/wsdd.py \& \nexit 0|' /etc/rc.local
+sudo systemctl restart rc.local.service
 
 #ftp user setup
 sudo useradd --home /home/$F2SFTPUSER0 --gid nogroup -m --shell /bin/false $F2SFTPUSER0 #does this user need a unix password?
